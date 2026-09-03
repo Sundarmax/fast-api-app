@@ -6,6 +6,25 @@ app = FastAPI()
 def get_db():
     return "Database Connection"
 
+def payment_service():
+    return "External call to payment gateway"
+
+def oauth2_Schem():
+    return "Extract the bearer token from the http header"
+
+def get_current_user(token : str = Depends(oauth2_Schem)):
+    user = token # validate the token and extract it from the JWT payload & do RBAC
+    return user
+
+def get_current_user(token : str = Depends(oauth2_Schem)):
+    curr_user = token # validate the token and extract it from the JWT payload & do RBAC
+    if curr_user['role'] != 'admin':
+        raise HTTPException(
+                status_code=403,
+                detail="Admin access required"
+        )
+    return curr_user
+
 def get_pagination(
     page: int=1,
     limit: int=10
@@ -24,6 +43,12 @@ def get_data(
     pagination = Depends(get_pagination)
 ):
     return pagination
+
+@app.get("/payment")
+async def payment():
+    reponse = await payment_service()
+    return reponse
+# async/await doesn't make the operation itself faster; it prevents the application from sitting idle during I/O waits, allowing the event loop to make progress on other tasks.
 
 @app.get("/users/{user_id}", response_model=UserResponse) #path parameters & limit fields in response.
 def get_user(user_id: int):
@@ -71,4 +96,11 @@ def delete_product(product_id : int):
     return {
         "id" : product_id,
         "message":  "deletion is done"
+    }
+    
+@app.post("/post")
+def login():
+    return {
+        "access_token" : "abcd",
+        "token_type" : "bearer"
     }
