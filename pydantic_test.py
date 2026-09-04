@@ -1,4 +1,4 @@
-from model import ProductCreate,Address, UserCreate
+from schemas.user import ProductCreate,Address, UserCreate
 
 # pydantic automatically does validation.
 # datatype checking.

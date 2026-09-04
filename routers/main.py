@@ -1,7 +1,10 @@
-from fastapi import FastAPI, HTTPException, Depends
-from model import UserCreate, UserResponse, ProductCreate
+from fastapi import FastAPI, HTTPException, Depends, APIRouter
+from schemas.user import UserCreate, UserResponse, ProductCreate
+from services import productService
 
 app = FastAPI()
+
+router = APIRouter(prefix="/v1", tags=["version1"])
 
 def get_db():
     return "Database Connection"
@@ -81,12 +84,10 @@ def get_products(db = Depends(get_db)): #DI - Separation of concerns and reusabi
 
 @app.get("/products/{product_id}")
 def get_product(product_id :  int):
-    return {
-        "id" : product_id,
-        "name" : "toothpaste",
-        "price" : 25
-     }
-    
+    product = productService.ProductService()
+    product = product.get_product_by_id(product_id)
+    return product
+
 @app.post("/products")
 def create_product(product : ProductCreate ):
     return product
