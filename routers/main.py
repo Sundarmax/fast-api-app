@@ -1,13 +1,15 @@
 from fastapi import FastAPI, HTTPException, Depends, APIRouter
-from schemas.user import UserCreate, UserResponse, ProductCreate
+from schemas.user import UserCreate, UserResponse, ProductCreate, CustomerCreate
 from services import productService
+from databases.session import get_db
+from databases.user import User
 
 app = FastAPI()
 
 router = APIRouter(prefix="/v1", tags=["version1"])
 
-def get_db():
-    return "Database Connection"
+# def get_db():
+#     return "Database Connection"
 
 def payment_service():
     return "External call to payment gateway"
@@ -67,15 +69,27 @@ def get_user(user_id: int):
     }
     
 @app.get("/users") #query paramerts
-def get_users(limit: int=10, active: bool=True):
-    return {
-        "limit" : limit,
-        "active": active
-    }
-@app.post("/users") #post request with pydantic validation.
-def create_user(user : UserCreate):
-    return user
+def get_users(db : session =  Depends(get_db)):
+    return db.query(User).all()
 
+# @app.post("/users") #post request with pydantic validation.
+# def create_user(user : UserCreate):
+#     return user
+@app.post("/users")
+def create_user(
+    user_data : CustomerCreate,
+    db: session = Depends(get_db)
+):
+    user = User(
+        name = user_data.name,
+        email = user_data.email
+    )
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return user
 @app.get("/products")
 def get_products(db = Depends(get_db)): #DI - Separation of concerns and reusability.
     return {

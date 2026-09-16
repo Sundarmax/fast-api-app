@@ -15,7 +15,11 @@ class UserCreate(BaseModel):
         if not value.strip():
             raise ValueError("NAme can't be empty")
         return value
-        
+
+class CustomerCreate(BaseModel):
+    name : str
+    email : str
+    
 class UserResponse(BaseModel):
     id : int
 
